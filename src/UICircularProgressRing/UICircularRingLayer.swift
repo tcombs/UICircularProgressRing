@@ -244,7 +244,7 @@ class UICircularRingLayer: CAShapeLayer {
             case let .conic(colors, colorLocations):
                 let cgColors = colors.map { $0.cgColor }
                 let locs = colorLocations.map { NSNumber(value: Float($0)) }
-                if #available(iOSApplicationExtension 12.0, *) {
+                if #available(iOS 12.0, *) {
                     drawConicGradient(colors: cgColors, colorLocations: locs, in: ctx)
                 }
             }
