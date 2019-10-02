@@ -219,30 +219,35 @@ class UICircularRingLayer: CAShapeLayer {
         ctx.drawPath(using: .stroke)
 
         if let gradientOptions = ring.gradientOptions {
-            // Create gradient and draw it
-            var cgColors: [CGColor] = [CGColor]()
-            for color: UIColor in gradientOptions.colors {
-                cgColors.append(color.cgColor)
-            }
-
-            guard let gradient: CGGradient = CGGradient(colorsSpace: nil,
-                                                        colors: cgColors as CFArray,
-                                                        locations: gradientOptions.colorLocations)
-            else {
-                fatalError("\nUnable to create gradient for progress ring.\n" +
-                    "Check values of gradientColors and gradientLocations.\n")
-            }
-
             ctx.saveGState()
-            ctx.addPath(innerPath.cgPath)
-            ctx.replacePathWithStrokedPath()
-            ctx.clip()
+                       ctx.addPath(innerPath.cgPath)
+                       ctx.replacePathWithStrokedPath()
+                       ctx.clip()
+            switch gradientOptions {
+            case let .linear(startPosition, endPosition, colors, colorLocations):
+                var cgColors: [CGColor] = [CGColor]()
+                for color: UIColor in colors {
+                    cgColors.append(color.cgColor)
+                }
 
-            drawGradient(gradient,
-                         start: gradientOptions.startPosition,
-                         end: gradientOptions.endPosition,
-                         in: ctx)
-
+                guard let gradient: CGGradient = CGGradient(colorsSpace: nil,
+                                                            colors: cgColors as CFArray,
+                                                            locations: colorLocations)
+                else {
+                    fatalError("\nUnable to create gradient for progress ring.\n" +
+                        "Check values of gradientColors and gradientLocations.\n")
+                }
+                drawLinearGradient(gradient,
+                             start: startPosition,
+                             end: endPosition,
+                             in: ctx)
+            case let .conic(colors, colorLocations):
+                let cgColors = colors.map { $0.cgColor }
+                let locs = colorLocations.map { NSNumber(value: Float($0)) }
+                if #available(iOSApplicationExtension 12.0, *) {
+                    drawConicGradient(colors: cgColors, colorLocations: locs, in: ctx)
+                }
+            }
             ctx.restoreGState()
         }
 
@@ -341,9 +346,9 @@ class UICircularRingLayer: CAShapeLayer {
     }
 
     /**
-     Draws a gradient with a start and end position inside the provided context
+     Draws a linear gradient with a start and end position inside the provided context
      */
-    private func drawGradient(_ gradient: CGGradient,
+    private func drawLinearGradient(_ gradient: CGGradient,
                               start: UICircularRingGradientPosition,
                               end: UICircularRingGradientPosition,
                               in context: CGContext) {
@@ -352,6 +357,22 @@ class UICircularRingLayer: CAShapeLayer {
                                    start: start.pointForPosition(in: bounds),
                                    end: end.pointForPosition(in: bounds),
                                    options: .drawsBeforeStartLocation)
+    }
+    
+    
+    /**
+    Draws a conic gradient
+    */
+    @available(iOS 12.0, *)
+    private func drawConicGradient(colors: [CGColor], colorLocations: [NSNumber], in context: CGContext) {
+        let subLayer = CAGradientLayer()
+        subLayer.startPoint = CGPoint(x: 0.5, y: 0.5)
+        subLayer.endPoint = CGPoint(x: 0.5, y: 0)
+        subLayer.type = .conic
+        subLayer.colors = colors
+        subLayer.locations = colorLocations
+        subLayer.frame = bounds
+        subLayer.render(in: context)
     }
 
     /**

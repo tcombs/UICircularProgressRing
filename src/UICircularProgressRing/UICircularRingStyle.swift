@@ -202,39 +202,22 @@ public enum UICircularRingGradientPosition {
 /**
  UICircularRingGradientOptions
 
- Struct for defining the options for the UICircularRingStyle.gradient case.
+ Enum for defining the options for the UICircularRingStyle.gradient case.
 
  ## Important ##
  Make sure the number of `colors` is equal to the number of `colorLocations`
  */
-public struct UICircularRingGradientOptions {
 
-    /// a default styling option for the gradient style
-    public static let `default` = UICircularRingGradientOptions(startPosition: .topRight,
-                                                            endPosition: .bottomLeft,
-                                                            colors: [.red, .blue],
-                                                            colorLocations: [0, 1])
-
-    /// the start location for the gradient
-    public let startPosition: UICircularRingGradientPosition
-
-    /// the end location for the gradient
-    public let endPosition: UICircularRingGradientPosition
-
-    /// the colors to use in the gradient, the count of this list must match the count of `colorLocations`
-    public let colors: [UIColor]
-
-    /// the locations of where to place the colors, valid numbers are from 0.0 - 1.0
-    public let colorLocations: [CGFloat]
-
-    /// create a new UICircularRingGradientOptions
-    public init(startPosition: UICircularRingGradientPosition,
-                endPosition: UICircularRingGradientPosition,
-                colors: [UIColor],
-                colorLocations: [CGFloat]) {
-        self.startPosition = startPosition
-        self.endPosition = endPosition
-        self.colors = colors
-        self.colorLocations = colorLocations
-    }
+public enum UICircularRingGradientOptions {
+    case linear(
+        startPosition: UICircularRingGradientPosition,
+        endPosition: UICircularRingGradientPosition,
+        colors: [UIColor],
+        colorLocations: [CGFloat]
+    )
+    @available(iOS 12.0, *)
+    case conic(
+        colors: [UIColor],
+        colorLocations: [CGFloat]
+    )
 }
